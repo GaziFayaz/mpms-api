@@ -1,0 +1,1025 @@
+{
+  "info": {
+    "name": "MPMS Backend API",
+    "description": "Minimal Project Management System - All API endpoints\n\nBase URL: http://localhost:4000/api\n\nSeed users:\n- admin@mpms.com / password123 (admin)\n- manager@mpms.com / password123 (manager)\n- member@mpms.com / password123 (member)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('token', pm.response.json().data.token);",
+                  "    pm.collectionVariables.set('refreshToken', pm.response.json().data.refreshToken);",
+                  "}",
+                  "",
+                  "if (pm.response.json().data.user.role === 'admin') {",
+                  "    pm.collectionVariables.set('adminToken', pm.response.json().data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"name\": \"Admin User\", \"email\": \"admin@mpms.com\", \"password\": \"password123\" }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('token', pm.response.json().data.token);",
+                  "    pm.collectionVariables.set('refreshToken', pm.response.json().data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"email\": \"admin@mpms.com\", \"password\": \"password123\" }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login as Manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('token', pm.response.json().data.token);",
+                  "    pm.collectionVariables.set('refreshToken', pm.response.json().data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"email\": \"manager@mpms.com\", \"password\": \"password123\" }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login as Member",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('token', pm.response.json().data.token);",
+                  "    pm.collectionVariables.set('refreshToken', pm.response.json().data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"email\": \"member@mpms.com\", \"password\": \"password123\" }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Me (Get Current User)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('token', pm.response.json().data.token);",
+                  "    pm.collectionVariables.set('refreshToken', pm.response.json().data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"refreshToken\": \"{{refreshToken}}\" }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List Users (admin/manager)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-user-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create User (admin only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"member\",\n  \"department\": \"Engineering\",\n  \"skills\": [\"typescript\", \"react\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Update User (admin only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"department\": \"Design\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-user-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete User (admin only)",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-user-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Invite User (admin only)",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/users/:id/invite",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":id", "invite"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-user-id-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "List Projects",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/projects?status=active",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects"],
+              "query": [
+                { "key": "status", "value": "active", "disabled": true },
+                { "key": "client", "value": "Acme", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Project Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/projects/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-project-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Project (admin/manager)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"New Project\",\n  \"client\": \"Acme Corp\",\n  \"description\": \"A new project description\",\n  \"startDate\": \"2025-06-01\",\n  \"endDate\": \"2025-12-31\",\n  \"budget\": 75000,\n  \"status\": \"planned\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects"]
+            }
+          }
+        },
+        {
+          "name": "Update Project (admin/manager)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Project Title\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/projects/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-project-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Project (admin only)",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/projects/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-project-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Project Sprints",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/projects/:id/sprints",
+              "host": ["{{baseUrl}}"],
+              "path": ["projects", ":id", "sprints"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-project-id-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sprints",
+      "item": [
+        {
+          "name": "Get Sprint Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/sprints/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["sprints", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-sprint-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Sprint (admin/manager)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": \"paste-project-id-here\",\n  \"title\": \"New Sprint\",\n  \"startDate\": \"2025-06-01\",\n  \"endDate\": \"2025-06-14\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sprints",
+              "host": ["{{baseUrl}}"],
+              "path": ["sprints"]
+            }
+          }
+        },
+        {
+          "name": "Update Sprint (admin/manager)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Sprint Title\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sprints/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["sprints", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-sprint-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reorder Sprint (admin/manager)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sortOrder\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sprints/:id/order",
+              "host": ["{{baseUrl}}"],
+              "path": ["sprints", ":id", "order"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-sprint-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Sprint Tasks",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/sprints/:id/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["sprints", ":id", "tasks"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-sprint-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Sprint (admin only)",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/sprints/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["sprints", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-sprint-id-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "List Tasks (paginated, filterable)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" },
+                { "key": "project", "value": "paste-project-id-here", "disabled": true },
+                { "key": "sprint", "value": "paste-sprint-id-here", "disabled": true },
+                { "key": "status", "value": "todo", "disabled": true },
+                { "key": "priority", "value": "high", "disabled": true },
+                { "key": "assignee", "value": "paste-user-id-here", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Task Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Task (admin/manager)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": \"paste-project-id-here\",\n  \"title\": \"New Task\",\n  \"description\": \"Task description\",\n  \"priority\": \"high\",\n  \"estimateHours\": 8,\n  \"dueDate\": \"2025-07-15\",\n  \"assigneeIds\": [\"paste-user-id-here\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks"]
+            }
+          }
+        },
+        {
+          "name": "Update Task (admin/manager)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Task Title\",\n  \"priority\": \"critical\",\n  \"assigneeIds\": [\"paste-user-id-here\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Task Status (with workflow validation)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id", "status"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            },
+            "description": "Status flow: todo → in_progress → review → done\n- Any member: todo→in_progress, in_progress→review\n- Admin/manager only: review→done"
+          }
+        },
+        {
+          "name": "Update Kanban Order",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sortOrder\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id/kanban-order",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id", "kanban-order"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Task (admin only)",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subtasks",
+      "item": [
+        {
+          "name": "Add Subtask",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"New Subtask\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id/subtasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id", "subtasks"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Toggle Subtask",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completed\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id/subtasks/:subId",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id", "subtasks", ":subId"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                },
+                {
+                  "key": "subId",
+                  "value": "paste-subtask-id-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "List Comments (threaded)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id", "comments"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"This is a comment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id", "comments"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Reply",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"This is a reply\",\n  \"parentId\": \"paste-comment-id-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id", "comments"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit Own Comment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body\": \"Edited comment text\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/comments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["comments", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-comment-id-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Attachments",
+      "item": [
+        {
+          "name": "Upload File (multipart)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Select a PDF, PNG, JPG, or GIF file (max 10MB)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id/attachments",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id", "attachments"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Attachment (owner/admin)",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/attachments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["attachments", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-attachment-id-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Time Logs",
+      "item": [
+        {
+          "name": "List Time Logs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id/timelogs",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id", "timelogs"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Log Time",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hours\": 4,\n  \"description\": \"Worked on feature implementation\",\n  \"loggedDate\": \"2025-06-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tasks/:id/timelogs",
+              "host": ["{{baseUrl}}"],
+              "path": ["tasks", ":id", "timelogs"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-task-id-here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Project Report (admin/manager)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/project/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "project", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-project-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "User Report (admin/manager)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/user/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "user", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "paste-user-id-here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Overview Report (admin/manager)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "overview"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
