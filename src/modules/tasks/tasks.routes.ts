@@ -6,6 +6,7 @@ import { authenticate } from "../../middleware/auth.js";
 import { requireRole } from "../../middleware/authorize.js";
 import { commentsController } from "../comments/comments.controller.js";
 import { attachmentsController } from "../attachments/attachments.controller.js";
+import { timeLogsController } from "../timelogs/timelogs.controller.js";
 import { uploadSingle } from "../../middleware/upload.js";
 
 const router = Router();
@@ -21,5 +22,7 @@ router.patch("/:id/subtasks/:subId", authenticate, tasksController.toggleSubtask
 router.get("/:id/comments", authenticate, commentsController.listByTask);
 router.post("/:id/comments", authenticate, commentsController.create);
 router.post("/:id/attachments", authenticate, uploadSingle, attachmentsController.upload);
+router.get("/:id/timelogs", authenticate, timeLogsController.listByTask);
+router.post("/:id/timelogs", authenticate, timeLogsController.create);
 
 export default router;

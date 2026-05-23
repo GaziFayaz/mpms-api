@@ -9,6 +9,7 @@ import sprintsRoutes from "./modules/sprints/sprints.routes.js";
 import tasksRoutes from "./modules/tasks/tasks.routes.js";
 import commentsRoutes from "./modules/comments/comments.routes.js";
 import { attachmentRoutes } from "./modules/attachments/attachments.routes.js";
+import reportsRoutes from "./modules/reports/reports.routes.js";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/sprints", sprintsRoutes);
 app.use("/api/tasks", tasksRoutes);
 app.use("/api/comments", commentsRoutes);
 app.use("/api/attachments", attachmentRoutes);
+app.use("/api/reports", reportsRoutes);
 
 app.use(errorHandler);
 
