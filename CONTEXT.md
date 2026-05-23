@@ -41,15 +41,15 @@
 - Global error handler middleware: `src/middleware/error-handler.ts`
 - Stack traces included in development responses
 
-## Module Structure
+## Phase 2 - Users - Complete
+- [x] Users validation schemas (createUserSchema, updateUserSchema)
+- [x] Users service (list, getById, create, update, delete)
+- [x] Users controller
+- [x] Users routes mounted at /api/users
+- [x] Authorize middleware (requireRole) - role-based guard
+- [x] 9 integration tests passing
+- [x] Total: 19 tests passing
 Each feature module follows: routes → controller → service → validation
-```
-src/modules/<name>/
-  <name>.routes.ts
-  <name>.controller.ts
-  <name>.service.ts
-  <name>.validation.ts
-```
 
 ## Phase 0 - Complete
 - [x] Project initialized (bun init)
