@@ -66,3 +66,13 @@ src/modules/<name>/
 - [x] ESLint + Prettier config
 - [x] Vitest config
 - [x] Tests passing (env.test.ts)
+
+## Phase 1 - Auth - Complete
+- [x] Auth validation schemas (registerSchema, loginSchema)
+- [x] Auth service (register, login, getMe with JWT generation via bcrypt + jsonwebtoken)
+- [x] Auth controller
+- [x] Auth routes mounted at /api/auth
+- [x] JWT middleware (authenticate) - extracts user from Bearer token
+- [x] Validation middleware (validate) - Zod schema parsing
+- [x] 9 integration tests passing
+- [x] Zod 4 note: uses `issues` property (not `errors`) for ZodError details
