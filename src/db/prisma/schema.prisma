@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  admin
+  manager
+  member
+}
+
+enum ProjectStatus {
+  planned
+  active
+  completed
+  archived
+}
+
+enum TaskStatus {
+  todo
+  in_progress
+  review
+  done
+}
+
+enum TaskPriority {
+  low
+  medium
+  high
+  critical
+}
+
+enum ActivityAction {
+  created
+  updated_status
+  assigned
+  commented
+  attached_file
+  subtask_toggled
+}
+
+model User {
+  id         String    @id @default(uuid()) @db.Uuid
+  name       String
+  email      String    @unique
+  password   String
+  role       UserRole  @default(member)
+  department String?
+  skills     String[]
+  avatarUrl  String?   @map("avatar_url")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  taskAssignees TaskAssignee[]
+  comments      Comment[]
+  attachments   Attachment[]
+  timeLogs      TimeLog[]
+  activityLogs  ActivityLog[]
+
+  @@map("users")
+}
+
+model Project {
+  id           String        @id @default(uuid()) @db.Uuid
+  title        String
+  client       String
+  description  String?
+  startDate    DateTime      @map("start_date") @db.Date
+  endDate      DateTime      @map("end_date") @db.Date
+  budget       Decimal?      @db.Decimal(12, 2)
+  status       ProjectStatus @default(planned)
+  thumbnailUrl String?       @map("thumbnail_url")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  sprints Sprint[]
+  tasks   Task[]
+
+  @@map("projects")
+}
+
+model Sprint {
+  id           String   @id @default(uuid()) @db.Uuid
+  projectId    String   @map("project_id") @db.Uuid
+  title        String
+  sprintNumber Int      @map("sprint_number")
+  startDate    DateTime @map("start_date") @db.Date
+  endDate      DateTime @map("end_date") @db.Date
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@unique([projectId, sprintNumber])
+  @@map("sprints")
+}
+
+model Task {
+  id            String       @id @default(uuid()) @db.Uuid
+  sprintId      String?      @map("sprint_id") @db.Uuid
+  projectId     String       @map("project_id") @db.Uuid
+  title         String
+  description   String?
+  status        TaskStatus   @default(todo)
+  priority      TaskPriority @default(medium)
+  estimateHours Decimal?     @map("estimate_hours") @db.Decimal(6, 2)
+  dueDate       DateTime?    @map("due_date") @db.Date
+  sortOrder     Int          @default(0) @map("sort_order")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  sprint   Sprint?         @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  project  Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  taskAssignees TaskAssignee[]
+  subtasks      SubTask[]
+  attachments Attachment[]
+  comments    Comment[]
+  activityLog ActivityLog[]
+  timeLogs    TimeLog[]
+
+  @@map("tasks")
+}
+
+model TaskAssignee {
+  taskId String @map("task_id") @db.Uuid
+  userId String @map("user_id") @db.Uuid
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, userId])
+  @@map("task_assignees")
+}
+
+model SubTask {
+  id        String   @id @default(uuid()) @db.Uuid
+  taskId    String   @map("task_id") @db.Uuid
+  title     String
+  completed Boolean  @default(false)
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@map("subtasks")
+}
+
+model Attachment {
+  id         String   @id @default(uuid()) @db.Uuid
+  taskId     String   @map("task_id") @db.Uuid
+  fileName   String   @map("file_name")
+  fileUrl    String   @map("file_url")
+  fileType   String   @map("file_type")
+  fileSize   Int      @map("file_size")
+  uploadedBy String   @map("uploaded_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  task     Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploader User @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+
+  @@map("attachments")
+}
+
+model Comment {
+  id        String    @id @default(uuid()) @db.Uuid
+  taskId    String    @map("task_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  parentId  String?   @map("parent_id") @db.Uuid
+  body      String
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  task    Task       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user    User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  Comment?   @relation("CommentReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies Comment[]  @relation("CommentReplies")
+
+  @@map("comments")
+}
+
+model ActivityLog {
+  id        String         @id @default(uuid()) @db.Uuid
+  taskId    String         @map("task_id") @db.Uuid
+  userId    String         @map("user_id") @db.Uuid
+  action    ActivityAction
+  details   Json           @default("{}")
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activity_logs")
+}
+
+model TimeLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  taskId      String   @map("task_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  hours       Decimal  @db.Decimal(6, 2)
+  description String?
+  loggedDate  DateTime @map("logged_date") @db.Date
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("time_logs")
+}
