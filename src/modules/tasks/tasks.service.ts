@@ -280,6 +280,59 @@ export class TasksService {
 
     return updated;
   }
+
+  async addSubtask(taskId: string, title: string, userId: string) {
+    const task = await prisma.task.findUnique({ where: { id: taskId } });
+    if (!task) throw AppError.notFound("Task not found");
+
+    const maxOrder = await prisma.subTask.findFirst({
+      where: { taskId },
+      orderBy: { sortOrder: "desc" },
+      select: { sortOrder: true },
+    });
+
+    const subtask = await prisma.subTask.create({
+      data: {
+        taskId,
+        title,
+        sortOrder: (maxOrder?.sortOrder ?? -1) + 1,
+      },
+    });
+
+    await prisma.activityLog.create({
+      data: {
+        taskId,
+        userId,
+        action: "subtask_toggled",
+        details: { subtaskId: subtask.id, title },
+      },
+    });
+
+    return subtask;
+  }
+
+  async toggleSubtask(taskId: string, subtaskId: string, completed: boolean, userId: string) {
+    const subtask = await prisma.subTask.findFirst({
+      where: { id: subtaskId, taskId },
+    });
+    if (!subtask) throw AppError.notFound("Subtask not found");
+
+    const updated = await prisma.subTask.update({
+      where: { id: subtaskId },
+      data: { completed },
+    });
+
+    await prisma.activityLog.create({
+      data: {
+        taskId,
+        userId,
+        action: "subtask_toggled",
+        details: { subtaskId, completed },
+      },
+    });
+
+    return updated;
+  }
 }
 
 export const tasksService = new TasksService();

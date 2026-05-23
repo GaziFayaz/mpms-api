@@ -13,5 +13,7 @@ router.post("/", authenticate, requireRole("admin", "manager"), validate(createT
 router.put("/:id", authenticate, requireRole("admin", "manager"), validate(updateTaskSchema), tasksController.update);
 router.delete("/:id", authenticate, requireRole("admin"), tasksController.remove);
 router.patch("/:id/status", authenticate, validate(updateStatusSchema), tasksController.updateStatus);
+router.post("/:id/subtasks", authenticate, tasksController.addSubtask);
+router.patch("/:id/subtasks/:subId", authenticate, tasksController.toggleSubtask);
 
 export default router;

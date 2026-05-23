@@ -68,6 +68,29 @@ export class TasksController {
       next(err);
     }
   }
+
+  async addSubtask(req: Request, res: Response, next: NextFunction) {
+    try {
+      const subtask = await tasksService.addSubtask(req.params.id!, req.body.title, req.user!.userId);
+      res.status(201).json({ data: subtask });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async toggleSubtask(req: Request, res: Response, next: NextFunction) {
+    try {
+      const subtask = await tasksService.toggleSubtask(
+        req.params.id!,
+        req.params.subId!,
+        req.body.completed,
+        req.user!.userId,
+      );
+      res.json({ data: subtask });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const tasksController = new TasksController();
