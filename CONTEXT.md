@@ -76,3 +76,80 @@ Each feature module follows: routes → controller → service → validation
 - [x] Validation middleware (validate) - Zod schema parsing
 - [x] 9 integration tests passing
 - [x] Zod 4 note: uses `issues` property (not `errors`) for ZodError details
+
+## Phase 3 - Projects - Complete
+- [x] Projects validation schemas (createProjectSchema, updateProjectSchema)
+- [x] Projects service (list, getById, create, update, delete) with stats
+- [x] Projects controller
+- [x] Projects routes mounted at /api/projects
+- [x] 10 integration tests passing
+- [x] Total: 29 tests passing
+
+## Phase 4 - Sprints - Complete
+- [x] Sprints validation schemas
+- [x] Sprints service (CRUD, auto-increment sprint_number, listByProject)
+- [x] Sprints controller
+- [x] Sprints routes mounted at /api/sprints
+- [x] Project sprints sub-route: /api/projects/:projectId/sprints
+- [x] 7 integration tests passing
+- [x] Total: 36 tests passing
+
+## Phase 5 - Tasks - Complete
+- [x] Tasks validation schemas (createTaskSchema, updateTaskSchema)
+- [x] Tasks service (list with pagination/filtering, getById, create, update, delete)
+- [x] Tasks controller
+- [x] Tasks routes mounted at /api/tasks
+- [x] Task assignees via TaskAssignee junction table
+- [x] 9 integration tests passing
+- [x] Total: 45 tests passing
+
+## Phase 6 - Status Workflow - Complete
+- [x] State machine: todo → in_progress → review → done
+- [x] Review approval: only manager/admin can approve review → done
+- [x] Activity log entries created on each status change
+- [x] Invalid transition validation
+- [x] 6 integration tests passing
+- [x] Total: 51 tests passing
+
+## Phase 7 - Subtasks - Complete
+- [x] Subtask creation with auto-increment sortOrder
+- [x] Toggle subtask completed/uncompleted
+- [x] Activity log on subtask toggle
+- [x] 4 integration tests passing
+- [x] Total: 55 tests passing
+
+## Phase 8 - Comments - Complete
+- [x] Threaded comments via parentId self-reference
+- [x] Create comment, create reply
+- [x] Edit own comment only
+- [x] List comments with nested replies
+- [x] 4 integration tests passing
+- [x] Total: 59 tests passing
+
+## Phase 9 - Attachments - Complete
+- [x] Multer file upload middleware with MIME validation (PDF, PNG, JPG, GIF)
+- [x] File storage in uploads/ directory
+- [x] Delete attachment (owner or admin)
+- [x] Custom upload error handling
+- [x] 3 integration tests passing
+- [x] Total: 62 tests passing
+
+## Phase 10 - TimeLogs + Reports - Complete
+- [x] Time logging for tasks
+- [x] List time logs per task
+- [x] Project progress report (tasks, completion, hours, breakdown)
+- [x] User workload report (tasks, hours, projects)
+- [x] Overview report (all projects summary)
+- [x] 6 integration tests passing
+- [x] Total: 68 tests passing
+
+## API Routes Summary
+- `/api/auth` - register, login, me
+- `/api/users` - CRUD (admin/manager)
+- `/api/projects` - CRUD + sprints sub-route
+- `/api/sprints` - CRUD
+- `/api/tasks` - CRUD + status, subtasks, comments, attachments, timelogs
+- `/api/comments` - edit
+- `/api/attachments` - delete
+- `/api/reports` - project, user, overview
+
