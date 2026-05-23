@@ -5,6 +5,8 @@ import { createTaskSchema, updateTaskSchema, updateStatusSchema } from "./tasks.
 import { authenticate } from "../../middleware/auth.js";
 import { requireRole } from "../../middleware/authorize.js";
 import { commentsController } from "../comments/comments.controller.js";
+import { attachmentsController } from "../attachments/attachments.controller.js";
+import { uploadSingle } from "../../middleware/upload.js";
 
 const router = Router();
 
@@ -18,5 +20,6 @@ router.post("/:id/subtasks", authenticate, tasksController.addSubtask);
 router.patch("/:id/subtasks/:subId", authenticate, tasksController.toggleSubtask);
 router.get("/:id/comments", authenticate, commentsController.listByTask);
 router.post("/:id/comments", authenticate, commentsController.create);
+router.post("/:id/attachments", authenticate, uploadSingle, attachmentsController.upload);
 
 export default router;
