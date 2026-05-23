@@ -7,6 +7,7 @@ import usersRoutes from "./modules/users/users.routes.js";
 import projectsRoutes from "./modules/projects/projects.routes.js";
 import sprintsRoutes from "./modules/sprints/sprints.routes.js";
 import tasksRoutes from "./modules/tasks/tasks.routes.js";
+import commentsRoutes from "./modules/comments/comments.routes.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use("/api/users", usersRoutes);
 app.use("/api/projects", projectsRoutes);
 app.use("/api/sprints", sprintsRoutes);
 app.use("/api/tasks", tasksRoutes);
+app.use("/api/comments", commentsRoutes);
 
 app.use(errorHandler);
 

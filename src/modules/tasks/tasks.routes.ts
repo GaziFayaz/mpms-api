@@ -4,6 +4,7 @@ import { validate } from "../../middleware/validate.js";
 import { createTaskSchema, updateTaskSchema, updateStatusSchema } from "./tasks.validation.js";
 import { authenticate } from "../../middleware/auth.js";
 import { requireRole } from "../../middleware/authorize.js";
+import { commentsController } from "../comments/comments.controller.js";
 
 const router = Router();
 
@@ -15,5 +16,7 @@ router.delete("/:id", authenticate, requireRole("admin"), tasksController.remove
 router.patch("/:id/status", authenticate, validate(updateStatusSchema), tasksController.updateStatus);
 router.post("/:id/subtasks", authenticate, tasksController.addSubtask);
 router.patch("/:id/subtasks/:subId", authenticate, tasksController.toggleSubtask);
+router.get("/:id/comments", authenticate, commentsController.listByTask);
+router.post("/:id/comments", authenticate, commentsController.create);
 
 export default router;
