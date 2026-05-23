@@ -131,4 +131,23 @@ describe("Users API", () => {
       expect(res.status).toBe(403);
     });
   });
+
+  describe("POST /api/users/:id/invite", () => {
+    it("allows admin to send invite", async () => {
+      const res = await request
+        .post(`/api/users/${memberId}/invite`)
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.message).toContain("Invitation");
+    });
+
+    it("denies manager to send invite", async () => {
+      const res = await request
+        .post(`/api/users/${memberId}/invite`)
+        .set("Authorization", `Bearer ${managerToken}`);
+
+      expect(res.status).toBe(403);
+    });
+  });
 });

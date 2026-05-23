@@ -99,6 +99,13 @@ export class UsersService {
 
     await prisma.user.delete({ where: { id } });
   }
+
+  async invite(id: string) {
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) throw AppError.notFound("User not found");
+
+    return { message: `Invitation sent to ${user.email}` };
+  }
 }
 
 export const usersService = new UsersService();

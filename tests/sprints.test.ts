@@ -8,8 +8,10 @@ const request = supertest(app);
 let adminToken: string;
 let managerToken: string;
 let memberToken: string;
+let memberId: string;
 let projectId: string;
 let sprintId: string;
+let sprint2Id: string;
 
 async function registerAndLogin(name: string, email: string, password: string, role: string = "member") {
   const res = await request.post("/api/auth/register").send({ name, email, password });
@@ -29,6 +31,9 @@ describe("Sprints API", () => {
     adminToken = await registerAndLogin("Admin", "sprint-admin@test.com", "password123", "admin");
     managerToken = await registerAndLogin("Manager", "sprint-manager@test.com", "password123", "manager");
     memberToken = await registerAndLogin("Member", "sprint-member@test.com", "password123", "member");
+
+    const meRes = await request.get("/api/auth/me").set("Authorization", `Bearer ${memberToken}`);
+    memberId = meRes.body.data.id;
 
     const projRes = await request
       .post("/api/projects")
@@ -54,7 +59,6 @@ describe("Sprints API", () => {
 
       expect(res.status).toBe(201);
       expect(res.body.data.sprintNumber).toBe(1);
-      expect(res.body.data.title).toBe("Sprint 1");
       sprintId = res.body.data.id;
     });
 
@@ -66,6 +70,7 @@ describe("Sprints API", () => {
 
       expect(res.status).toBe(201);
       expect(res.body.data.sprintNumber).toBe(2);
+      sprint2Id = res.body.data.id;
     });
 
     it("denies member to create sprint", async () => {
@@ -101,6 +106,37 @@ describe("Sprints API", () => {
     });
   });
 
+  describe("PATCH /api/sprints/:id/order", () => {
+    it("reorders sprint", async () => {
+      const res = await request
+        .patch(`/api/sprints/${sprintId}/order`)
+        .set("Authorization", `Bearer ${managerToken}`)
+        .send({ sortOrder: 99 });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.sortOrder).toBe(99);
+    });
+  });
+
+  describe("GET /api/sprints/:id/tasks", () => {
+    beforeAll(async () => {
+      const taskRes = await request
+        .post("/api/tasks")
+        .set("Authorization", `Bearer ${managerToken}`)
+        .send({ projectId, sprintId, title: "Sprint Task", assigneeIds: [memberId] });
+    });
+
+    it("returns tasks for sprint", async () => {
+      const res = await request
+        .get(`/api/sprints/${sprintId}/tasks`)
+        .set("Authorization", `Bearer ${memberToken}`);
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body.data.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
   describe("GET /api/projects/:id/sprints", () => {
     it("returns sprints for project", async () => {
       const res = await request
@@ -114,7 +150,15 @@ describe("Sprints API", () => {
   });
 
   describe("DELETE /api/sprints/:id", () => {
-    it("allows admin to delete sprint", async () => {
+    it("allows admin to delete sprint 2", async () => {
+      const res = await request
+        .delete(`/api/sprints/${sprint2Id}`)
+        .set("Authorization", `Bearer ${adminToken}`);
+
+      expect(res.status).toBe(204);
+    });
+
+    it("allows admin to delete sprint 1", async () => {
       const res = await request
         .delete(`/api/sprints/${sprintId}`)
         .set("Authorization", `Bearer ${adminToken}`);

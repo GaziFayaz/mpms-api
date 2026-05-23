@@ -12,5 +12,6 @@ router.get("/:id", authenticate, requireRole("admin", "manager"), usersControlle
 router.post("/", authenticate, requireRole("admin"), validate(createUserSchema), usersController.create);
 router.put("/:id", authenticate, requireRole("admin"), validate(updateUserSchema), usersController.update);
 router.delete("/:id", authenticate, requireRole("admin"), usersController.remove);
+router.post("/:id/invite", authenticate, requireRole("admin"), usersController.invite);
 
 export default router;

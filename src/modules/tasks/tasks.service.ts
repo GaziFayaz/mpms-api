@@ -333,6 +333,16 @@ export class TasksService {
 
     return updated;
   }
+
+  async updateKanbanOrder(id: string, sortOrder: number) {
+    const task = await prisma.task.findUnique({ where: { id } });
+    if (!task) throw AppError.notFound("Task not found");
+
+    return prisma.task.update({
+      where: { id },
+      data: { sortOrder },
+    });
+  }
 }
 
 export const tasksService = new TasksService();

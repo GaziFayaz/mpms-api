@@ -11,5 +11,7 @@ router.get("/:id", authenticate, sprintsController.getById);
 router.post("/", authenticate, requireRole("admin", "manager"), validate(createSprintSchema), sprintsController.create);
 router.put("/:id", authenticate, requireRole("admin", "manager"), validate(updateSprintSchema), sprintsController.update);
 router.delete("/:id", authenticate, requireRole("admin"), sprintsController.remove);
+router.patch("/:id/order", authenticate, requireRole("admin", "manager"), sprintsController.reorder);
+router.get("/:id/tasks", authenticate, sprintsController.listTasks);
 
 export default router;

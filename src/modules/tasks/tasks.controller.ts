@@ -91,6 +91,15 @@ export class TasksController {
       next(err);
     }
   }
+
+  async updateKanbanOrder(req: Request, res: Response, next: NextFunction) {
+    try {
+      const task = await tasksService.updateKanbanOrder(req.params.id!, req.body.sortOrder);
+      res.json({ data: task });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const tasksController = new TasksController();

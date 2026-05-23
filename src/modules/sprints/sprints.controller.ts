@@ -46,6 +46,24 @@ export class SprintsController {
       next(err);
     }
   }
+
+  async reorder(req: Request, res: Response, next: NextFunction) {
+    try {
+      const sprint = await sprintsService.reorder(req.params.id!, req.body.sortOrder);
+      res.json({ data: sprint });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async listTasks(req: Request, res: Response, next: NextFunction) {
+    try {
+      const tasks = await sprintsService.listTasks(req.params.id!);
+      res.json({ data: tasks });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const sprintsController = new SprintsController();

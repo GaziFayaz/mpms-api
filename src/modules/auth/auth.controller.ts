@@ -28,6 +28,15 @@ export class AuthController {
       next(err);
     }
   }
+
+  async refresh(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await authService.refresh(req.body.refreshToken);
+      res.json({ data: result });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const authController = new AuthController();

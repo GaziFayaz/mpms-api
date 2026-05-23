@@ -46,6 +46,15 @@ export class UsersController {
       next(err);
     }
   }
+
+  async invite(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await usersService.invite(req.params.id!);
+      res.json({ data: result });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const usersController = new UsersController();

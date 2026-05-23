@@ -120,3 +120,34 @@ describe("GET /api/auth/me", () => {
     expect(res.status).toBe(401);
   });
 });
+
+describe("POST /api/auth/refresh", () => {
+  let refreshToken: string;
+
+  beforeAll(async () => {
+    const res = await request.post("/api/auth/register").send({
+      name: "Refresh Test",
+      email: "refresh@example.com",
+      password: "password123",
+    });
+    refreshToken = res.body.data.refreshToken;
+  });
+
+  afterAll(async () => {
+    await prisma.user.deleteMany({ where: { email: "refresh@example.com" } });
+  });
+
+  it("returns new access token with valid refresh token", async () => {
+    const res = await request.post("/api/auth/refresh").send({ refreshToken });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.token).toBeDefined();
+    expect(res.body.data.refreshToken).toBeDefined();
+  });
+
+  it("rejects invalid refresh token", async () => {
+    const res = await request.post("/api/auth/refresh").send({ refreshToken: "invalid" });
+
+    expect(res.status).toBe(401);
+  });
+});

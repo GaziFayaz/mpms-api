@@ -147,6 +147,18 @@ describe("Tasks API", () => {
     });
   });
 
+  describe("PATCH /api/tasks/:id/kanban-order", () => {
+    it("updates task sort order", async () => {
+      const res = await request
+        .patch(`/api/tasks/${taskId}/kanban-order`)
+        .set("Authorization", `Bearer ${memberToken}`)
+        .send({ sortOrder: 42 });
+
+      expect(res.status).toBe(200);
+      expect(res.body.data.sortOrder).toBe(42);
+    });
+  });
+
   describe("DELETE /api/tasks/:id", () => {
     it("allows admin to delete task", async () => {
       const res = await request

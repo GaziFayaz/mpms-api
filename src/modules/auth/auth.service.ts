@@ -23,8 +23,9 @@ export class AuthService {
     });
 
     const token = this.generateAccessToken({ userId: user.id, role: user.role });
+    const refreshToken = this.generateRefreshToken({ userId: user.id, role: user.role });
 
-    return { user, token };
+    return { user, token, refreshToken };
   }
 
   async login(data: { email: string; password: string }) {
@@ -39,6 +40,7 @@ export class AuthService {
     }
 
     const token = this.generateAccessToken({ userId: user.id, role: user.role });
+    const refreshToken = this.generateRefreshToken({ userId: user.id, role: user.role });
 
     return {
       user: {
@@ -49,6 +51,7 @@ export class AuthService {
         avatarUrl: user.avatarUrl,
       },
       token,
+      refreshToken,
     };
   }
 
@@ -65,8 +68,23 @@ export class AuthService {
     return user;
   }
 
+  async refresh(refreshToken: string) {
+    try {
+      const decoded = jwt.verify(refreshToken, env.JWT_REFRESH_SECRET) as JwtPayload;
+      const newAccessToken = this.generateAccessToken({ userId: decoded.userId, role: decoded.role });
+      const newRefreshToken = this.generateRefreshToken({ userId: decoded.userId, role: decoded.role });
+      return { token: newAccessToken, refreshToken: newRefreshToken };
+    } catch {
+      throw AppError.unauthorized("Invalid or expired refresh token");
+    }
+  }
+
   private generateAccessToken(payload: JwtPayload): string {
     return jwt.sign(payload, env.JWT_ACCESS_SECRET, { expiresIn: env.JWT_ACCESS_EXPIRES_IN } as jwt.SignOptions);
+  }
+
+  private generateRefreshToken(payload: JwtPayload): string {
+    return jwt.sign(payload, env.JWT_REFRESH_SECRET, { expiresIn: env.JWT_REFRESH_EXPIRES_IN } as jwt.SignOptions);
   }
 }
 

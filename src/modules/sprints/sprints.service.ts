@@ -115,6 +115,47 @@ export class SprintsService {
 
     await prisma.sprint.delete({ where: { id } });
   }
+
+  async reorder(id: string, sortOrder: number) {
+    const sprint = await prisma.sprint.findUnique({ where: { id } });
+    if (!sprint) throw AppError.notFound("Sprint not found");
+
+    return prisma.sprint.update({
+      where: { id },
+      data: { sortOrder },
+    });
+  }
+
+  async listTasks(id: string) {
+    const sprint = await prisma.sprint.findUnique({ where: { id } });
+    if (!sprint) throw AppError.notFound("Sprint not found");
+
+    const tasks = await prisma.task.findMany({
+      where: { sprintId: id },
+      include: {
+        project: { select: { title: true } },
+        taskAssignees: {
+          include: { user: { select: { id: true, name: true, avatarUrl: true } } },
+        },
+      },
+      orderBy: { sortOrder: "asc" },
+    });
+
+    return tasks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      status: t.status,
+      priority: t.priority,
+      estimateHours: t.estimateHours,
+      dueDate: t.dueDate,
+      assignees: t.taskAssignees.map((ta) => ({
+        id: ta.user.id,
+        name: ta.user.name,
+        avatarUrl: ta.user.avatarUrl,
+      })),
+      sortOrder: t.sortOrder,
+    }));
+  }
 }
 
 export const sprintsService = new SprintsService();
