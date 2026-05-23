@@ -54,6 +54,20 @@ export class TasksController {
       next(err);
     }
   }
+
+  async updateStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const task = await tasksService.updateStatus(
+        req.params.id!,
+        req.body.status,
+        req.user!.userId,
+        req.user!.role,
+      );
+      res.json({ data: task });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export const tasksController = new TasksController();

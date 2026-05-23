@@ -23,3 +23,7 @@ export const updateTaskSchema = z.object({
   assigneeIds: z.array(z.string().uuid()).optional(),
   sortOrder: z.number().int().optional(),
 });
+
+export const updateStatusSchema = z.object({
+  status: z.enum(["todo", "in_progress", "review", "done"]),
+});

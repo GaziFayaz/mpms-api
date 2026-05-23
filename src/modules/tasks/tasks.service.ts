@@ -238,6 +238,48 @@ export class TasksService {
 
     await prisma.task.delete({ where: { id } });
   }
+
+  async updateStatus(
+    id: string,
+    newStatus: string,
+    userId: string,
+    userRole: string,
+  ) {
+    const task = await prisma.task.findUnique({ where: { id } });
+    if (!task) throw AppError.notFound("Task not found");
+
+    const validTransitions: Record<string, string[]> = {
+      todo: ["in_progress"],
+      in_progress: ["review"],
+      review: ["done"],
+      done: [],
+    };
+
+    const allowed = validTransitions[task.status];
+    if (!allowed || !allowed.includes(newStatus)) {
+      throw AppError.badRequest(`Cannot transition from ${task.status} to ${newStatus}`);
+    }
+
+    if (task.status === "review" && newStatus === "done" && userRole === "member") {
+      throw AppError.forbidden("Only manager or admin can approve review");
+    }
+
+    const updated = await prisma.task.update({
+      where: { id },
+      data: { status: newStatus as any },
+    });
+
+    await prisma.activityLog.create({
+      data: {
+        taskId: id,
+        userId,
+        action: "updated_status",
+        details: { from: task.status, to: newStatus },
+      },
+    });
+
+    return updated;
+  }
 }
 
 export const tasksService = new TasksService();
