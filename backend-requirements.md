@@ -1,6 +1,6 @@
 # Minimal Project Management System — Backend Requirements
 
-> **Stack:** Express.js (TypeScript) + PostgreSQL
+> **Stack:** Express.js (TypeScript) + PostgreSQL + Prisma ORM + Bun runtime
 
 ---
 
@@ -133,19 +133,24 @@
 ## 2. Project Structure
 
 ```
-server/
+backend/
 ├── src/
-│   ├── index.ts              # entry point, app bootstrap
+│   ├── index.ts              # entry point, app bootstrap, keep-alive, error handlers
 │   ├── app.ts                # express app setup (middleware, routes, error handler)
 │   ├── config/
-│   │   ├── database.ts       # PostgreSQL connection / pool (pg or knex)
-│   │   ├── env.ts            # env var validation (dotenv + zod)
-│   │   └── auth.ts           # JWT secret, token expiry config
+│   │   └── env.ts            # env var validation (zod) + typed export
+│   ├── db/
+│   │   ├── prisma/
+│   │   │   └── schema.prisma # all data models
+│   │   ├── migrations/       # Prisma Migrate output
+│   │   └── seed.ts           # seed data (admin, manager, member + demo project)
+│   ├── lib/
+│   │   └── prisma.ts         # PrismaClient singleton (@prisma/adapter-pg)
 │   ├── middleware/
-│   │   ├── auth.ts           # JWT verification, extract user from token
+│   │   ├── auth.ts           # JWT verification, extract user from token (authenticate)
 │   │   ├── authorize.ts      # role-based guard: requireRole('admin' | 'manager')
-│   │   ├── validate.ts       # request body/query validation (zod)
-│   │   ├── upload.ts         # multer config for file uploads (pdf/images)
+│   │   ├── validate.ts       # request body validation (zod)
+│   │   ├── upload.ts         # multer config for file uploads (pdf/png/jpg/gif)
 │   │   └── error-handler.ts  # global error handler, structured error responses
 │   ├── modules/
 │   │   ├── auth/
@@ -182,26 +187,25 @@ server/
 │   │   │   ├── attachments.controller.ts
 │   │   │   └── attachments.service.ts
 │   │   ├── timelogs/
-│   │   │   ├── timelogs.routes.ts
 │   │   │   ├── timelogs.controller.ts
 │   │   │   └── timelogs.service.ts
 │   │   └── reports/
 │   │       ├── reports.routes.ts
 │   │       ├── reports.controller.ts
 │   │       └── reports.service.ts
-│   ├── db/
-│   │   ├── migrations/       # timestamped SQL migrations
-│   │   ├── seeds/            # seed data (demo admin, manager, member)
-│   │   └── knexfile.ts       # knex config
 │   ├── types/
 │   │   └── index.ts          # shared TypeScript interfaces
 │   └── utils/
 │       ├── errors.ts         # AppError class, error codes
-│       └── helpers.ts        # pagination helper, slug gen
+│       └── helpers.ts        # pagination helper
+├── tests/                     # integration tests (bun test / vitest)
 ├── uploads/                   # local upload storage (dev only)
+├── prisma.config.ts           # Prisma CLI config (datasource URL, migrations path)
 ├── package.json
 ├── tsconfig.json
-└── .env.example
+├── .env.example
+├── postman_collection.json    # all 32 API endpoints
+└── CONTEXT.md                 # architecture decisions and phase log
 ```
 
 ---
@@ -211,10 +215,10 @@ server/
 ### Auth
 | Method | Path               | Auth   | Role   | Description                    |
 |--------|--------------------|--------|--------|--------------------------------|
-| POST   | `/api/auth/login`  | No     | —      | Login, returns JWT             |
-| POST   | `/api/auth/register`| No    | —      | Register (or invite-only)      |
+| POST   | `/api/auth/login`  | No     | —      | Login, returns JWT + refresh token |
+| POST   | `/api/auth/register`| No    | —      | Register, returns JWT + refresh token |
 | GET    | `/api/auth/me`     | Yes    | Any    | Current user profile           |
-| POST   | `/api/auth/refresh`| Yes    | Any    | Refresh token (optional)       |
+| POST   | `/api/auth/refresh`| No     | —      | Exchange refresh token for new access + refresh tokens |
 
 ### Users (Team Management)
 | Method | Path                    | Auth | Role        | Description               |
@@ -224,7 +228,7 @@ server/
 | POST   | `/api/users`            | Yes  | Admin       | Create user               |
 | PUT    | `/api/users/:id`        | Yes  | Admin       | Update user               |
 | DELETE | `/api/users/:id`        | Yes  | Admin       | Delete user               |
-| POST   | `/api/users/:id/invite` | Yes  | Admin       | Send invite email (opt)   |
+| POST   | `/api/users/:id/invite` | Yes  | Admin       | Send invite email (stub)  |
 
 ### Projects
 | Method | Path                          | Auth | Role        | Description                       |
@@ -285,18 +289,26 @@ server/
 | GET    | `/api/reports/user/:id`           | Yes  | Admin/Mgr   | User workload + time summary      |
 | GET    | `/api/reports/overview`           | Yes  | Admin/Mgr   | All projects summary              |
 
+### Health
+| Method | Path            | Auth | Role | Description          |
+|--------|-----------------|------|------|----------------------|
+| GET    | `/api/health`   | No   | —    | Server health check  |
+
 ---
 
 ## 4. Business Logic Requirements
 
 ### 4.1 Authentication & Authorization
-- **Bcrypt** for password hashing
-- **JWT** (access token, optional refresh token) with payload: `{ userId, role }`
+- **Bcrypt** for password hashing (10 rounds)
+- **JWT** access token (15m expiry) + refresh token (7d expiry)
+  - Access token payload: `{ userId, role }`
+  - Refresh token payload: `{ userId, role }`
+  - Signed with separate secrets: `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET`
 - Role hierarchy: `admin > manager > member`
   - `admin`: full CRUD on all resources
   - `manager`: create/update projects, sprints, tasks, view reports
   - `member`: view projects/tasks, update own assigned task status, comment, log time
-- Custom middleware: `requireRole(...roles)` to guard routes
+- Custom middleware: `authenticate` extracts user from JWT, `requireRole(...roles)` guards routes
 - All authenticated routes extract user from JWT and inject `req.user`
 
 ### 4.2 Task Status Workflow (Review Approval)
@@ -308,15 +320,15 @@ server/
 
 ### 4.3 File Uploads
 - Multer middleware for multipart form data
-- Accept: PDF, PNG, JPG, GIF (validate MIME and extension)
-- Max file size: 10 MB
-- Store: local `uploads/` folder in dev, S3-compatible in prod (env-configurable)
+- Accept: PDF, PNG, JPG, GIF (validate MIME)
+- Max file size: 10 MB (configurable via `MAX_FILE_SIZE`)
+- Store: local `uploads/` folder in dev
 - Upload endpoint returns `file_url`, `file_name`, `file_type`, `file_size`
 
 ### 4.4 Data Validation
-- **Zod** schemas for every request body, query params, and route params
+- **Zod** schemas for every request body
 - Validation runs in `validate` middleware before controller
-- Custom error messages returned in `{ error: string, details?: fieldErrors[] }` format
+- Custom error messages returned in `{ error: string, status: number, details?: fieldErrors[] }` format
 
 ### 4.5 Error Handling
 - Global error handler catches all thrown/explicit errors
@@ -329,6 +341,7 @@ server/
   }
   ```
 - `AppError` class with `statusCode`, `message`, optional `details`
+- Stack trace included in responses when `NODE_ENV=development`
 - Unhandled rejections return `500` with generic message
 
 ### 4.6 Pagination
@@ -341,19 +354,19 @@ server/
 - **User Report:** `GET /api/reports/user/:id`
   - Returns: assigned tasks by status, total hours logged, projects involved
 - **Overview:** `GET /api/reports/overview`
-  - Returns: all projects with progress percent, tasks count, time summary
+  - Returns: all projects with progress percent, tasks count
 
 ### 4.8 Sprint Number Auto-Increment
 - When creating a sprint for a project, `sprint_number` = `MAX(sprint_number) + 1` for that project
-- Transactional: use `SELECT FOR UPDATE` or app-level lock
+- App-level lock using ordered query
 
 ### 4.9 Database Migrations
-- Use Knex.js for migrations
-- Timestamp-prefixed migration files
-- Seed file with:
-  - 1 admin user (admin@mpms.com / admin123)
-  - 1 manager user
-  - 1 member user
+- Use Prisma Migrate (not Knex)
+- Timestamp-prefixed migration files in `src/db/migrations/`
+- Seed file at `src/db/seed.ts` with:
+  - 1 admin user (admin@mpms.com / password123)
+  - 1 manager user (manager@mpms.com / password123)
+  - 1 member user (member@mpms.com / password123)
   - 1 demo project with 2 sprints and 5 tasks
 
 ---
@@ -362,10 +375,10 @@ server/
 
 ### 5.1 Standard Response Format
 
-All endpoints return:
+All single-object endpoints return:
 ```json
 {
-  "data": { ... } | [ ... ],
+  "data": { ... },
   "message": "optional success message"
 }
 ```
@@ -388,7 +401,8 @@ Error responses:
   "status": 400,
   "details": [
     { "field": "title", "message": "Title is required" }
-  ]
+  ],
+  "stack": "Error: ... (development only)"
 }
 ```
 
@@ -396,15 +410,23 @@ Error responses:
 
 ```typescript
 // /api/auth/login → POST
-type LoginResponse = {
-  token: string;
+// /api/auth/register → POST
+type AuthResponse = {
+  token: string;       // access token (15m expiry)
+  refreshToken: string; // refresh token (7d expiry)
   user: {
     id: string;
     name: string;
     email: string;
     role: 'admin' | 'manager' | 'member';
-    avatar_url: string | null;
+    avatarUrl: string | null;
   };
+};
+
+// /api/auth/refresh → POST
+type RefreshResponse = {
+  token: string;
+  refreshToken: string;
 };
 
 // /api/projects → GET
@@ -413,10 +435,10 @@ type ProjectListItem = {
   title: string;
   client: string;
   status: 'planned' | 'active' | 'completed' | 'archived';
-  start_date: string;
-  end_date: string;
+  startDate: string;
+  endDate: string;
   budget: number | null;
-  thumbnail_url: string | null;
+  thumbnailUrl: string | null;
   stats: {
     total_tasks: number;
     completed_tasks: number;
@@ -428,19 +450,19 @@ type ProjectListItem = {
 type ProjectDetail = ProjectListItem & {
   description: string;
   sprints: SprintListItem[];
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 // /api/sprints/:id → GET
 type SprintDetail = {
   id: string;
-  project_id: string;
+  projectId: string;
   title: string;
-  sprint_number: number;
-  start_date: string;
-  end_date: string;
-  sort_order: number;
+  sprintNumber: number;
+  startDate: string;
+  endDate: string;
+  sortOrder: number;
   tasks: TaskListItem[];
   stats: {
     total_tasks: number;
@@ -452,57 +474,48 @@ type SprintDetail = {
 // /api/tasks → GET (list)
 type TaskListItem = {
   id: string;
-  project_id: string;
-  project_title: string;
-  sprint_id: string | null;
-  sprint_title: string | null;
+  projectId: string;
+  projectTitle: string;
+  sprintId: string | null;
+  sprintTitle: string | null;
   title: string;
   status: 'todo' | 'in_progress' | 'review' | 'done';
   priority: 'low' | 'medium' | 'high' | 'critical';
-  estimate_hours: number | null;
-  due_date: string | null;
-  assignees: { id: string; name: string; avatar_url: string | null }[];
-  subtasks_stats: { total: number; completed: number };
-  sort_order: number;
+  estimateHours: number | null;
+  dueDate: string | null;
+  assignees: { id: string; name: string; avatarUrl: string | null }[];
+  subtasksStats: { total: number; completed: number };
+  sortOrder: number;
 };
 
 // /api/tasks/:id → GET (detail)
 type TaskDetail = TaskListItem & {
   description: string;
-  subtasks: { id: string; title: string; completed: boolean; sort_order: number }[];
-  attachments: {
-    id: string;
-    file_name: string;
-    file_url: string;
-    file_type: string;
-    file_size: number;
-    uploaded_by: { id: string; name: string };
-    created_at: string;
-  }[];
+  subtasks: { id: string; title: string; completed: boolean; sortOrder: number }[];
   comments: CommentItem[];
-  activity_log: ActivityItem[];
-  created_at: string;
-  updated_at: string;
+  activityLog: ActivityItem[];
+  createdAt: string;
+  updatedAt: string;
 };
 
 type CommentItem = {
   id: string;
-  user_id: string;
-  user_name: string;
-  user_avatar_url: string | null;
-  parent_id: string | null;
+  userId: string;
+  userName: string;
+  userAvatarUrl: string | null;
+  parentId: string | null;
   body: string;
-  created_at: string;
+  createdAt: string;
   replies: CommentItem[];
 };
 
 type ActivityItem = {
   id: string;
-  user_id: string;
-  user_name: string;
+  userId: string;
+  userName: string;
   action: 'created' | 'updated_status' | 'assigned' | 'commented' | 'attached_file' | 'subtask_toggled';
   details: Record<string, unknown>;
-  created_at: string;
+  createdAt: string;
 };
 
 // /api/reports/project/:id → GET
@@ -521,36 +534,51 @@ type ProjectReport = {
 
 ## 6. Development & Testing
 
-- **Runtime:** Node.js 20+, Express.js 4.x
+- **Runtime:** Bun 1.3+
+- **Framework:** Express.js 5.x
 - **Language:** TypeScript (strict mode)
-- **Database:** PostgreSQL 15+
-- **Query builder:** Knex.js (migrations, seeds, queries)
-- **Validation:** Zod
+- **Database:** PostgreSQL
+- **ORM:** Prisma 7.x (adapter: @prisma/adapter-pg)
+- **Query client:** PrismaClient
+- **Validation:** Zod 4.x
 - **File uploads:** Multer
 - **Auth:** jsonwebtoken, bcryptjs
-- **Environment:** dotenv
-- **Testing:** Vitest or Jest + Supertest (API integration tests)
+- **Environment:** Bun auto-loads `.env` (no dotenv import needed)
+- **Testing:** Bun test + Vitest (76 integration tests)
 - **Linting:** ESLint + Prettier
 
 ### Setup Commands
 ```bash
-cd server
-npm install
-npm run migrate
-npm run seed
-npm run dev          # ts-node-dev or tsx --watch
+cd backend
+bun install
+bun db:migrate
+bun db:seed
+bun dev
 ```
 
 ---
 
-## 7. Environment Variables (`server/.env`)
+## 7. VS Code Remote Development
+
+When using VS Code SSH to access a remote machine on the same network:
+- The server log outputs `Server running at http://localhost:4000 [development]` to trigger VS Code port auto-forwarding
+- If auto-forward doesn't trigger: press `F1` → "Forward a Port" → enter `4000`
+- Ensure `remote.autoForwardPorts` is enabled in VS Code settings
+- Access via `http://localhost:4000` in your local browser after port forwarding
+
+---
+
+## 8. Environment Variables (`.env`)
 
 ```
 PORT=4000
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mpms
-JWT_SECRET=your-secret-key-here
-JWT_EXPIRES_IN=7d
+DATABASE_URL=postgresql://...
+JWT_ACCESS_SECRET=your-access-secret
+JWT_REFRESH_SECRET=your-refresh-secret
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
 UPLOAD_DIR=./uploads
 MAX_FILE_SIZE=10485760
+CORS_ORIGIN=http://localhost:3000
 NODE_ENV=development
 ```

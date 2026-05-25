@@ -10,17 +10,21 @@ process.on("unhandledRejection", (reason) => {
 });
 
 const server = app.listen(env.PORT, () => {
-  console.log(`Server running on port ${env.PORT} [${env.NODE_ENV}]`);
+  console.log(`Server running at http://localhost:${env.PORT} [${env.NODE_ENV}]`);
 });
 
-const keepAlive = setInterval(() => {}, 60_000);
+server.on("error", (err: any) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`Port ${env.PORT} is already in use. Kill the existing process or use a different port.`);
+    process.exit(1);
+  }
+  throw err;
+});
 
 process.on("SIGTERM", () => {
-  clearInterval(keepAlive);
   server.close(() => process.exit(0));
 });
 
 process.on("SIGINT", () => {
-  clearInterval(keepAlive);
   server.close(() => process.exit(0));
 });

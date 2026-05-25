@@ -1,13 +1,8 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaNeon } from "@prisma/adapter-neon";
-import { neonConfig } from "@neondatabase/serverless";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { env } from "../config/env.js";
 
-neonConfig.poolQueryViaFetch = true;
-
-const adapter = new PrismaNeon({
-  connectionString: env.DATABASE_URL,
-});
+const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
