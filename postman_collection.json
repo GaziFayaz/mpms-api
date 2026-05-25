@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "MPMS Backend API",
-    "description": "Minimal Project Management System - All API endpoints\n\nBase URL: http://localhost:4000/api\n\nSeed users:\n- admin@mpms.com / password123 (admin)\n- manager@mpms.com / password123 (manager)\n- member@mpms.com / password123 (member)",
+    "description": "Minimal Project Management System - All 42 API endpoints\n\nBase URL: http://localhost:4000/api\n\nSeed users:\n- admin@mpms.com / password123 (admin)\n- manager@mpms.com / password123 (manager)\n- member@mpms.com / password123 (member)\n\nUsage:\n1. Set {{baseUrl}} to your server (default: http://localhost:4000/api)\n2. Run Register or Login first to auto-populate {{token}} and {{refreshToken}}\n3. Paste actual IDs into :id variables where indicated\n4. All endpoints inherit Bearer token except no-auth endpoints (Register, Login, Refresh, Health)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -38,6 +38,7 @@
       "item": [
         {
           "name": "Register",
+          "auth": { "type": "noauth" },
           "event": [
             {
               "listen": "test",
@@ -74,6 +75,7 @@
         },
         {
           "name": "Login",
+          "auth": { "type": "noauth" },
           "event": [
             {
               "listen": "test",
@@ -106,6 +108,7 @@
         },
         {
           "name": "Login as Manager",
+          "auth": { "type": "noauth" },
           "event": [
             {
               "listen": "test",
@@ -138,6 +141,7 @@
         },
         {
           "name": "Login as Member",
+          "auth": { "type": "noauth" },
           "event": [
             {
               "listen": "test",
@@ -181,6 +185,7 @@
         },
         {
           "name": "Refresh Token",
+          "auth": { "type": "noauth" },
           "event": [
             {
               "listen": "test",
@@ -1010,6 +1015,7 @@
       "item": [
         {
           "name": "Health Check",
+          "auth": { "type": "noauth" },
           "request": {
             "method": "GET",
             "url": {
