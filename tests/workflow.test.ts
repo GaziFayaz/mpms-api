@@ -8,6 +8,7 @@ const request = supertest(app);
 let managerToken: string;
 let memberToken: string;
 let projectId: string;
+let sprintId: string;
 let taskId: string;
 
 async function registerAndLogin(name: string, email: string, password: string, role: string = "member") {
@@ -34,15 +35,22 @@ describe("Task Status Workflow", () => {
       .send({ title: "Workflow Project", client: "Test", startDate: "2025-01-01", endDate: "2025-12-31" });
     projectId = projRes.body.data.id;
 
+    const sprintRes = await request
+      .post("/api/sprints")
+      .set("Authorization", `Bearer ${managerToken}`)
+      .send({ projectId, title: "WF Sprint", startDate: "2025-01-01", endDate: "2025-01-14" });
+    sprintId = sprintRes.body.data.id;
+
     const taskRes = await request
       .post("/api/tasks")
       .set("Authorization", `Bearer ${managerToken}`)
-      .send({ projectId, title: "Workflow Task" });
+      .send({ sprintId, title: "Workflow Task" });
     taskId = taskRes.body.data.id;
   });
 
   afterAll(async () => {
-    await prisma.task.deleteMany({ where: { projectId } });
+    await prisma.task.deleteMany({ where: { sprintId } });
+    await prisma.sprint.deleteMany({ where: { projectId } });
     await prisma.project.deleteMany({ where: { id: projectId } });
     await prisma.user.deleteMany({
       where: { email: { in: ["workflow-mgr@test.com", "workflow-mem@test.com"] } },

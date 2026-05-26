@@ -95,11 +95,12 @@ Each feature module follows: routes → controller → service → validation
 - [x] Total: 36 tests passing
 
 ## Phase 5 - Tasks - Complete
-- [x] Tasks validation schemas (createTaskSchema, updateTaskSchema)
+- [x] Tasks validation schemas (createTaskSchema, updateTaskSchema) — **sprintId required on create**
 - [x] Tasks service (list with pagination/filtering, getById, create, update, delete)
 - [x] Tasks controller
 - [x] Tasks routes mounted at /api/tasks
 - [x] Task assignees via TaskAssignee junction table
+- [x] Tasks must belong to a sprint (sprintId non-nullable, projectId auto-derived from sprint)
 - [x] 9 integration tests passing
 - [x] Total: 45 tests passing
 

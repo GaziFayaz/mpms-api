@@ -9,6 +9,7 @@ const request = supertest(app);
 
 let managerToken: string;
 let projectId: string;
+let sprintId: string;
 let taskId: string;
 let attachmentId: string;
 
@@ -32,10 +33,16 @@ describe("Attachments", () => {
       .send({ title: "Attach Project", client: "Test", startDate: "2025-01-01", endDate: "2025-12-31" });
     projectId = projRes.body.data.id;
 
+    const sprintRes = await request
+      .post("/api/sprints")
+      .set("Authorization", `Bearer ${managerToken}`)
+      .send({ projectId, title: "Attach Sprint", startDate: "2025-01-01", endDate: "2025-01-14" });
+    sprintId = sprintRes.body.data.id;
+
     const taskRes = await request
       .post("/api/tasks")
       .set("Authorization", `Bearer ${managerToken}`)
-      .send({ projectId, title: "Attachable Task" });
+      .send({ sprintId, title: "Attachable Task" });
     taskId = taskRes.body.data.id;
 
     fs.writeFileSync(testFilePath, "%PDF-1.4 test");
@@ -43,7 +50,8 @@ describe("Attachments", () => {
 
   afterAll(async () => {
     await prisma.attachment.deleteMany({ where: { taskId } });
-    await prisma.task.deleteMany({ where: { projectId } });
+    await prisma.task.deleteMany({ where: { sprintId } });
+    await prisma.sprint.deleteMany({ where: { projectId } });
     await prisma.project.deleteMany({ where: { id: projectId } });
     await prisma.user.deleteMany({ where: { email: "uploader@test.com" } });
     if (fs.existsSync(testFilePath)) fs.unlinkSync(testFilePath);

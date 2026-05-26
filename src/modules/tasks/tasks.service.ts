@@ -156,8 +156,8 @@ export class TasksService {
   }
 
   async create(data: {
-    projectId: string;
-    sprintId?: string;
+    sprintId: string;
+    projectId?: string;
     title: string;
     description?: string;
     priority?: string;
@@ -165,15 +165,18 @@ export class TasksService {
     dueDate?: string;
     assigneeIds?: string[];
   }) {
+    const sprint = await prisma.sprint.findUnique({ where: { id: data.sprintId } });
+    if (!sprint) throw AppError.notFound("Sprint not found");
+
     const createData: Record<string, any> = {
-      projectId: data.projectId,
+      projectId: data.projectId || sprint.projectId,
+      sprintId: data.sprintId,
       title: data.title,
       description: data.description,
       priority: data.priority || "medium",
       estimateHours: data.estimateHours,
     };
 
-    if (data.sprintId) createData.sprintId = data.sprintId;
     if (data.dueDate) createData.dueDate = new Date(data.dueDate);
     if (data.assigneeIds?.length) {
       createData.taskAssignees = {

@@ -611,7 +611,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"projectId\": \"paste-project-id-here\",\n  \"title\": \"New Task\",\n  \"description\": \"Task description\",\n  \"priority\": \"high\",\n  \"estimateHours\": 8,\n  \"dueDate\": \"2025-07-15\",\n  \"assigneeIds\": [\"paste-user-id-here\"]\n}"
+              "raw": "{\n  \"sprintId\": \"paste-sprint-id-here\",\n  \"title\": \"New Task\",\n  \"description\": \"Task description\",\n  \"priority\": \"high\",\n  \"estimateHours\": 8,\n  \"dueDate\": \"2025-07-15\",\n  \"assigneeIds\": [\"paste-user-id-here\"]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/tasks",

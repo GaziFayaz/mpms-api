@@ -9,6 +9,7 @@ let managerToken: string;
 let memberToken: string;
 let memberId: string;
 let projectId: string;
+let sprintId: string;
 let taskId: string;
 
 async function registerAndLogin(name: string, email: string, password: string, role: string = "member") {
@@ -38,16 +39,23 @@ describe("TimeLogs & Reports", () => {
       .send({ title: "TimeLog Project", client: "Test", startDate: "2025-01-01", endDate: "2025-12-31" });
     projectId = projRes.body.data.id;
 
+    const sprintRes = await request
+      .post("/api/sprints")
+      .set("Authorization", `Bearer ${managerToken}`)
+      .send({ projectId, title: "TL Sprint", startDate: "2025-01-01", endDate: "2025-01-14" });
+    sprintId = sprintRes.body.data.id;
+
     const taskRes = await request
       .post("/api/tasks")
       .set("Authorization", `Bearer ${managerToken}`)
-      .send({ projectId, title: "Loggable Task", assigneeIds: [memberId] });
+      .send({ sprintId, title: "Loggable Task", assigneeIds: [memberId] });
     taskId = taskRes.body.data.id;
   });
 
   afterAll(async () => {
     await prisma.timeLog.deleteMany({ where: { taskId } });
-    await prisma.task.deleteMany({ where: { projectId } });
+    await prisma.task.deleteMany({ where: { sprintId } });
+    await prisma.sprint.deleteMany({ where: { projectId } });
     await prisma.project.deleteMany({ where: { id: projectId } });
     await prisma.user.deleteMany({
       where: { email: { in: ["timelog-mgr@test.com", "timelog-mem@test.com"] } },

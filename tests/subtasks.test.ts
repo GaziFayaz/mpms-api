@@ -7,6 +7,7 @@ const request = supertest(app);
 
 let memberToken: string;
 let projectId: string;
+let sprintId: string;
 let taskId: string;
 let subTaskId: string;
 
@@ -27,16 +28,23 @@ describe("Subtasks", () => {
       .send({ title: "Subtask Project", client: "Test", startDate: "2025-01-01", endDate: "2025-12-31" });
     projectId = projRes.body.data.id;
 
+    const sprintRes = await request
+      .post("/api/sprints")
+      .set("Authorization", `Bearer ${memberToken}`)
+      .send({ projectId, title: "Sub Sprint", startDate: "2025-01-01", endDate: "2025-01-14" });
+    sprintId = sprintRes.body.data.id;
+
     const taskRes = await request
       .post("/api/tasks")
       .set("Authorization", `Bearer ${memberToken}`)
-      .send({ projectId, title: "Parent Task" });
+      .send({ sprintId, title: "Parent Task" });
     taskId = taskRes.body.data.id;
   });
 
   afterAll(async () => {
     await prisma.subTask.deleteMany({ where: { taskId } });
-    await prisma.task.deleteMany({ where: { projectId } });
+    await prisma.task.deleteMany({ where: { sprintId } });
+    await prisma.sprint.deleteMany({ where: { projectId } });
     await prisma.project.deleteMany({ where: { id: projectId } });
     await prisma.user.deleteMany({ where: { email: "subuser@test.com" } });
   });

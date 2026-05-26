@@ -10,6 +10,7 @@ let managerToken: string;
 let memberToken: string;
 let memberId: string;
 let projectId: string;
+let sprintId: string;
 let taskId: string;
 
 async function registerAndLogin(name: string, email: string, password: string, role: string = "member") {
@@ -39,10 +40,17 @@ describe("Tasks API", () => {
       .set("Authorization", `Bearer ${adminToken}`)
       .send({ title: "Task Project", client: "Test", startDate: "2025-01-01", endDate: "2025-12-31" });
     projectId = projRes.body.data.id;
+
+    const sprintRes = await request
+      .post("/api/sprints")
+      .set("Authorization", `Bearer ${adminToken}`)
+      .send({ projectId, title: "Task Sprint", startDate: "2025-01-01", endDate: "2025-01-14" });
+    sprintId = sprintRes.body.data.id;
   });
 
   afterAll(async () => {
-    await prisma.task.deleteMany({ where: { projectId } });
+    await prisma.task.deleteMany({ where: { sprintId } });
+    await prisma.sprint.deleteMany({ where: { projectId } });
     await prisma.project.deleteMany({ where: { id: projectId } });
     await prisma.user.deleteMany({
       where: { email: { in: ["task-admin@test.com", "task-manager@test.com", "task-member@test.com"] } },
@@ -55,7 +63,7 @@ describe("Tasks API", () => {
         .post("/api/tasks")
         .set("Authorization", `Bearer ${adminToken}`)
         .send({
-          projectId,
+          sprintId,
           title: "Test Task",
           description: "Task description",
           priority: "high",
@@ -75,7 +83,7 @@ describe("Tasks API", () => {
       const res = await request
         .post("/api/tasks")
         .set("Authorization", `Bearer ${memberToken}`)
-        .send({ projectId, title: "X" });
+        .send({ sprintId, title: "X" });
 
       expect(res.status).toBe(403);
     });

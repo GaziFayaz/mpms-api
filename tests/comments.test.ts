@@ -8,6 +8,7 @@ const request = supertest(app);
 let userToken: string;
 let userId: string;
 let projectId: string;
+let sprintId: string;
 let taskId: string;
 let commentId: string;
 
@@ -29,16 +30,23 @@ describe("Comments", () => {
       .send({ title: "Comment Project", client: "Test", startDate: "2025-01-01", endDate: "2025-12-31" });
     projectId = projRes.body.data.id;
 
+    const sprintRes = await request
+      .post("/api/sprints")
+      .set("Authorization", `Bearer ${userToken}`)
+      .send({ projectId, title: "Comment Sprint", startDate: "2025-01-01", endDate: "2025-01-14" });
+    sprintId = sprintRes.body.data.id;
+
     const taskRes = await request
       .post("/api/tasks")
       .set("Authorization", `Bearer ${userToken}`)
-      .send({ projectId, title: "Commentable Task" });
+      .send({ sprintId, title: "Commentable Task" });
     taskId = taskRes.body.data.id;
   });
 
   afterAll(async () => {
     await prisma.comment.deleteMany({ where: { taskId } });
-    await prisma.task.deleteMany({ where: { projectId } });
+    await prisma.task.deleteMany({ where: { sprintId } });
+    await prisma.sprint.deleteMany({ where: { projectId } });
     await prisma.project.deleteMany({ where: { id: projectId } });
     await prisma.user.deleteMany({ where: { email: "commenter@test.com" } });
   });
