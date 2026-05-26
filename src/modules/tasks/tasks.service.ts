@@ -157,7 +157,6 @@ export class TasksService {
 
   async create(data: {
     sprintId: string;
-    projectId?: string;
     title: string;
     description?: string;
     priority?: string;
@@ -169,7 +168,7 @@ export class TasksService {
     if (!sprint) throw AppError.notFound("Sprint not found");
 
     const createData: Record<string, any> = {
-      projectId: data.projectId || sprint.projectId,
+      projectId: sprint.projectId,
       sprintId: data.sprintId,
       title: data.title,
       description: data.description,
