@@ -1,5 +1,12 @@
 # MPMS Backend - Architecture Context
 
+## Git Conventions
+- **Separate meaningful commits** for small but significant updates
+- Each commit should represent a single logical change (e.g., new dependency, schema migration, service refactor, new endpoint, test update)
+- Group related file changes into one commit; split unrelated changes into separate commits
+- Commit message format: `type: short description` (types: feat, fix, refactor, chore, test, docs)
+- Never commit `.env` files — use `.env.example` for template values
+
 ## Stack
 - **Runtime:** Bun 1.3.14
 - **Framework:** Express 5.2.1
@@ -10,6 +17,7 @@
 - **Auth:** bcryptjs 3.0.3, jsonwebtoken 9.0.3
 - **Testing:** Vitest 4.1.7
 - **Dev runner:** tsx 4.22.3
+- **Storage:** Cloudflare R2 via @aws-sdk/client-s3
 
 ## Project Decisions
 
@@ -128,12 +136,17 @@ Each feature module follows: routes → controller → service → validation
 - [x] Total: 59 tests passing
 
 ## Phase 9 - Attachments - Complete
-- [x] Multer file upload middleware with MIME validation (PDF, PNG, JPG, GIF)
-- [x] File storage in uploads/ directory
-- [x] Delete attachment (owner or admin)
-- [x] Custom upload error handling
-- [x] 3 integration tests passing
-- [x] Total: 62 tests passing
+- [x] Cloudflare R2 storage via @aws-sdk/client-s3 (replaced local disk storage)
+- [x] Multer memoryStorage for buffer capture, then PutObject to R2
+- [x] Presigned download URLs (1h expiry) via @aws-sdk/s3-request-presigner
+- [x] Delete attachment removes from R2 + DB
+- [x] MIME validation (PDF, PNG, JPG, GIF) + 10MB size limit
+- [x] List attachments per task with presigned URLs
+- [x] GET /attachments/:id for metadata + download URL
+- [x] GET /attachments/:id/download → 302 redirect to presigned URL
+- [x] Prisma: fileKey column stores R2 object key
+- [x] 7 integration tests passing
+- [x] Total: 68 tests passing
 
 ## Phase 10 - TimeLogs + Reports - Complete
 - [x] Time logging for tasks
@@ -151,6 +164,6 @@ Each feature module follows: routes → controller → service → validation
 - `/api/sprints` - CRUD
 - `/api/tasks` - CRUD + status, subtasks, comments, attachments, timelogs
 - `/api/comments` - edit
-- `/api/attachments` - delete
+- `/api/attachments` - delete, get metadata, download (302 redirect)
 - `/api/reports` - project, user, overview
 
