@@ -11,8 +11,8 @@
 - **Runtime:** Bun 1.3.14
 - **Framework:** Express 5.2.1
 - **Language:** TypeScript 5.9 (strict mode)
-- **ORM:** Prisma 7.8.0 (adapter: @prisma/adapter-neon)
-- **Database:** PostgreSQL (Neon serverless)
+- **ORM:** Prisma 7.8.0 (adapter: @prisma/adapter-pg)
+- **Database:** PostgreSQL (Neon-hosted)
 - **Validation:** Zod 4.4.3
 - **Auth:** bcryptjs 3.0.3, jsonwebtoken 9.0.3
 - **Testing:** Vitest 4.1.7
@@ -37,7 +37,7 @@
 - Migrations: `src/db/migrations/`
 - Config: `prisma.config.ts` (root level)
 - Client singleton: `src/lib/prisma.ts`
-- Adapter: `@prisma/adapter-neon` with `neonConfig.poolQueryViaFetch = true`
+- Adapter: `@prisma/adapter-pg` (standard connection pool)
 
 ### Config
 - Single file: `src/config/env.ts`
