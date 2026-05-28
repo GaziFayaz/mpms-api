@@ -23,6 +23,7 @@ router.patch("/:id/subtasks/:subId", authenticate, tasksController.toggleSubtask
 router.get("/:id/comments", authenticate, commentsController.listByTask);
 router.post("/:id/comments", authenticate, commentsController.create);
 router.post("/:id/attachments", authenticate, uploadSingle, attachmentsController.upload);
+router.get("/:id/attachments", authenticate, attachmentsController.listByTask);
 router.get("/:id/timelogs", authenticate, timeLogsController.listByTask);
 router.post("/:id/timelogs", authenticate, timeLogsController.create);
 

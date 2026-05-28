@@ -15,6 +15,33 @@ export class AttachmentsController {
     }
   }
 
+  async listByTask(req: Request, res: Response, next: NextFunction) {
+    try {
+      const attachments = await attachmentsService.listByTask(req.params.id!);
+      res.json({ data: attachments });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const attachment = await attachmentsService.getById(req.params.id!);
+      res.json({ data: attachment });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async download(req: Request, res: Response, next: NextFunction) {
+    try {
+      const attachment = await attachmentsService.getById(req.params.id!);
+      res.redirect(302, attachment.downloadUrl);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async remove(req: Request, res: Response, next: NextFunction) {
     try {
       await attachmentsService.delete(req.params.id!, req.user!.userId, req.user!.role);
