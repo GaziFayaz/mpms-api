@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error-handler.js";
+import { openApiSpec } from "./openapi/index.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import usersRoutes from "./modules/users/users.routes.js";
 import projectsRoutes from "./modules/projects/projects.routes.js";
@@ -20,6 +22,11 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
+
+app.get("/api/openapi.json", (_req, res) => {
+  res.json(openApiSpec);
+});
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);

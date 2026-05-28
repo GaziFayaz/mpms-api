@@ -18,6 +18,7 @@
 - **Testing:** Vitest 4.1.7
 - **Dev runner:** tsx 4.22.3
 - **Storage:** Cloudflare R2 via @aws-sdk/client-s3
+- **API Docs:** swagger-ui-express 5.0.1 (OpenAPI 3.1)
 
 ## Project Decisions
 
@@ -166,4 +167,44 @@ Each feature module follows: routes → controller → service → validation
 - `/api/comments` - edit
 - `/api/attachments` - delete, get metadata, download (302 redirect)
 - `/api/reports` - project, user, overview
+
+## OpenAPI Documentation
+
+### Spec location
+- OpenAPI spec builder: `src/openapi/index.ts` (builds spec from `src/openapi/schemas.ts`)
+- Swagger UI: `GET /api/docs`
+- Raw spec JSON (for AI agent consumption): `GET /api/openapi.json`
+- Spec is OpenAPI 3.1 format, generated dynamically on startup — always reflects current code
+
+### Mandatory sync rules
+When making ANY backend change, you MUST also update the OpenAPI spec:
+
+| Backend change | OpenAPI update required |
+|---|---|
+| New/removed/renamed route | Add/remove/rename path entry in `src/openapi/index.ts` |
+| Changed HTTP method on a route | Update method in path entry |
+| Added/removed middleware (authenticate, requireRole, validate) | Update `security` array in path entry; update `description` with role info |
+| Modified Zod validation schema | Update corresponding OpenAPI request schema in `src/openapi/schemas.ts` |
+| Changed request/response shape | Update requestBody schema in `src/openapi/schemas.ts` and responses in path entry |
+| Added/removed query or path parameters | Update `parameters` array in path entry and in `src/openapi/schemas.ts` |
+| New/removed enum values in Prisma schema | Update both Zod enum and OpenAPI enum in `src/openapi/schemas.ts` |
+| New entity/model added | Add entity schema in `src/openapi/schemas.ts` and register in `components.schemas` in `src/openapi/index.ts` |
+
+### Verification checklist
+After any changes, confirm all of the following:
+1. `GET /api/openapi.json` returns valid OpenAPI 3.1 JSON (no broken `$ref`s, no undefined schemas)
+2. Swagger UI at `GET /api/docs` renders without JavaScript console errors
+3. `security` array on each path accurately reflects the middleware chain in the route file
+4. Response schemas match actual controller return shapes (check `res.json({ data: ... })` calls)
+5. All schema objects include `example` values for each property
+6. All request schemas have correct `required` fields matching the Zod `.required()`/`.optional()` calls
+
+## Phase 11 - OpenAPI Documentation - Complete
+- [x] OpenAPI 3.1 spec builder with all 45 endpoints
+- [x] Component schemas for all entities, requests, and responses
+- [x] JWT Bearer security scheme documented
+- [x] Role requirements documented in endpoint descriptions
+- [x] Swagger UI served at /api/docs
+- [x] Raw spec JSON endpoint at /api/openapi.json for AI agent consumption
+- [x] CONTEXT.md sync rules for future maintainers
 
