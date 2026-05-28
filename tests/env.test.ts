@@ -10,9 +10,13 @@ describe("env config", () => {
     expect(typeof env.JWT_REFRESH_SECRET).toBe("string");
     expect(env.JWT_ACCESS_EXPIRES_IN).toBe("15m");
     expect(env.JWT_REFRESH_EXPIRES_IN).toBe("7d");
-    expect(env.UPLOAD_DIR).toBe("./uploads");
     expect(env.MAX_FILE_SIZE).toBe(10485760);
-    expect(env.CORS_ORIGIN).toBe("http://localhost:3000");
+    expect(typeof env.R2_ACCOUNT_ID).toBe("string");
+    expect(typeof env.R2_ACCESS_KEY_ID).toBe("string");
+    expect(typeof env.R2_SECRET_ACCESS_KEY).toBe("string");
+    expect(typeof env.R2_BUCKET_NAME).toBe("string");
+    expect(env.CORS_ORIGIN).toBeInstanceOf(Array);
+    expect(env.CORS_ORIGIN).toContain("http://localhost:3000");
     expect(["development", "production", "test"]).toContain(env.NODE_ENV);
     expect(typeof env.PORT).toBe("number");
     expect(typeof env.MAX_FILE_SIZE).toBe("number");
