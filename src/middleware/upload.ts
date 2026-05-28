@@ -1,24 +1,8 @@
 import multer from "multer";
-import path from "node:path";
-import fs from "node:fs";
 import type { Request, Response, NextFunction } from "express";
 import { env } from "../config/env.js";
 
-const uploadDir = path.resolve(env.UPLOAD_DIR);
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (_req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const ext = path.extname(file.originalname);
-    cb(null, `${uniqueSuffix}${ext}`);
-  },
-});
+const storage = multer.memoryStorage();
 
 const allowedMimes = ["image/png", "image/jpeg", "image/gif", "application/pdf"];
 
